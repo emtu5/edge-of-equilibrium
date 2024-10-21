@@ -1,1 +1,1 @@
-# edge-of-equilibrium
+# Edge of Equilibrium
