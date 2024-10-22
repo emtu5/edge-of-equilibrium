@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 1527909404207248257}
   - component: {fileID: 8044347906281307451}
   - component: {fileID: 9205698355862707683}
+  - component: {fileID: 4349246932333012502}
   - component: {fileID: 1103536251233946795}
   m_Layer: 0
   m_Name: Sphere
@@ -106,6 +107,20 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.5
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &4349246932333012502
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8442963280403627786}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c77963ceff236234cad6826d8dd5dc23, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _speed: 20
+  maxAngVelocity: 40000
 --- !u!54 &1103536251233946795
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -114,9 +129,9 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8442963280403627786}
   serializedVersion: 4
-  m_Mass: 1
-  m_Drag: 0
-  m_AngularDrag: 0.05
+  m_Mass: 4
+  m_Drag: 0.16
+  m_AngularDrag: 1.3
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -130,6 +145,6 @@ Rigidbody:
   m_ImplicitTensor: 1
   m_UseGravity: 1
   m_IsKinematic: 0
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_Constraints: 0
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
