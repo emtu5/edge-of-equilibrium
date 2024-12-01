@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class player1 : MonoBehaviour
+public class PlayerMovement : MonoBehaviour
 {
     [SerializeField]
     private float _speed = 5;
@@ -68,5 +68,10 @@ public class player1 : MonoBehaviour
         }
 
         rigidbody.AddForce(movement * _speed, ForceMode.Force);
+    }
+
+    public void setSpeed(float speed)
+    {
+        _speed = speed;
     }
 }
