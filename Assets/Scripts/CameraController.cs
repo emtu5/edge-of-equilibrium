@@ -3,7 +3,7 @@ using UnityEngine;
 public class CameraController : MonoBehaviour
 {
     public Transform player;
-    public Vector3 offset = new Vector3(0, 5, -10); // offset from player
+    public Vector3 offset = new Vector3(0, 8, -10); // offset from player
     public float rotationSpeed = 5f; // mouse rotation speed
     public float rotationStep = 90f;
     public float smoothRotationTime = 0.2f; // smooth transition time

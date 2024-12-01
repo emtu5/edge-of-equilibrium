@@ -3249,17 +3249,17 @@ PrefabInstance:
     - target: {fileID: 1377893333535549754, guid: 00685f4c29414994a930fc040432cd95,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 24.26
+      value: 12.72
       objectReference: {fileID: 0}
     - target: {fileID: 1377893333535549754, guid: 00685f4c29414994a930fc040432cd95,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: -23.42
+      value: -2.2
       objectReference: {fileID: 0}
     - target: {fileID: 1377893333535549754, guid: 00685f4c29414994a930fc040432cd95,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 8.7
+      value: -75.1
       objectReference: {fileID: 0}
     - target: {fileID: 1377893333535549754, guid: 00685f4c29414994a930fc040432cd95,
         type: 3}
@@ -3649,7 +3649,7 @@ PrefabInstance:
     - target: {fileID: 1295953535512033735, guid: 4d9b6d413a39896459c59c5b824fd441,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: -30.05
+      value: -29.87
       objectReference: {fileID: 0}
     - target: {fileID: 1295953535512033735, guid: 4d9b6d413a39896459c59c5b824fd441,
         type: 3}
@@ -5779,12 +5779,12 @@ PrefabInstance:
     - target: {fileID: 5711853019699383446, guid: 248e7f125fbce3640a0fdbf9131335a2,
         type: 3}
       propertyPath: m_LocalScale.x
-      value: 0.75
+      value: 0.32
       objectReference: {fileID: 0}
     - target: {fileID: 5711853019699383446, guid: 248e7f125fbce3640a0fdbf9131335a2,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 50.28
+      value: 50.6
       objectReference: {fileID: 0}
     - target: {fileID: 5711853019699383446, guid: 248e7f125fbce3640a0fdbf9131335a2,
         type: 3}
@@ -9594,6 +9594,16 @@ PrefabInstance:
       propertyPath: player
       value: 
       objectReference: {fileID: 748832120}
+    - target: {fileID: 2042627506397076663, guid: 740091b8124e54a4da1d25be533a7347,
+        type: 3}
+      propertyPath: offset.y
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 2042627506397076663, guid: 740091b8124e54a4da1d25be533a7347,
+        type: 3}
+      propertyPath: smoothFollowTime
+      value: 0.1
+      objectReference: {fileID: 0}
     - target: {fileID: 4860636799557542243, guid: 740091b8124e54a4da1d25be533a7347,
         type: 3}
       propertyPath: m_LocalPosition.x
