@@ -14,6 +14,8 @@ GameObject:
   - component: {fileID: 9205698355862707683}
   - component: {fileID: 4349246932333012502}
   - component: {fileID: 1103536251233946795}
+  - component: {fileID: 2613726223108143940}
+  - component: {fileID: 6747091942898064549}
   m_Layer: 0
   m_Name: Sphere
   m_TagString: Untagged
@@ -121,6 +123,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _speed: 20
   maxAngVelocity: 40000
+  cameraTransform: {fileID: 0}
 --- !u!54 &1103536251233946795
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -148,3 +151,29 @@ Rigidbody:
   m_Interpolate: 1
   m_Constraints: 0
   m_CollisionDetection: 1
+--- !u!114 &2613726223108143940
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8442963280403627786}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4aa90662303c75246972d35dc0a340bf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  player: {fileID: 1377893333535549754}
+--- !u!114 &6747091942898064549
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8442963280403627786}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cd4fa1781c145334caf5d93617d12abb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ballMaterial: {fileID: 11400000, guid: f8f4cfb731b2b54419aa231a1a5ec2a0, type: 2}
