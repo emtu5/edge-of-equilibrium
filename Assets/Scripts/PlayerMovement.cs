@@ -8,66 +8,65 @@ public class player1 : MonoBehaviour
     private float _speed = 5;
     [SerializeField]
     private float maxAngVelocity = 10;
-    
+
     private Rigidbody rigidbody;
     private bool forwardKeyPressed;
     private bool backwardKeyPressed;
     private bool leftKeyPressed;
     private bool rightKeyPressed;
 
-    // Start is called before the first frame update
+    public Transform cameraTransform; 
+
     void Start()
     {
         rigidbody = GetComponent<Rigidbody>();
         rigidbody.maxAngularVelocity = maxAngVelocity;
     }
 
-    // Update is called once per frame
     void Update()
     {
-        if(Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
-        {
-            forwardKeyPressed = true;
-            //transform.position = new Vector3(transform.position.x, transform.position.y, transform.position.z + _speed * Time.deltaTime);
-        }
-        if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))
-        {
-            backwardKeyPressed = true;
-            //transform.position = new Vector3(transform.position.x, transform.position.y, transform.position.z - _speed * Time.deltaTime);
-        }
-        if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
-        {
-            leftKeyPressed = true;
-            //transform.position = new Vector3(transform.position.x - _speed * Time.deltaTime, transform.position.y, transform.position.z);
-        }
-        if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
-        {
-            rightKeyPressed = true;
-            //transform.position = new Vector3(transform.position.x + _speed * Time.deltaTime, transform.position.y, transform.position.z);
-        }
+
     }
 
     private void FixedUpdate()
     {
-        if(forwardKeyPressed)
+        // check for key presses
+        forwardKeyPressed = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow);
+        backwardKeyPressed = Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow);
+        leftKeyPressed = Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow);
+        rightKeyPressed = Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow);
+
+        Vector3 cameraForward = cameraTransform.forward;
+        Vector3 cameraRight = cameraTransform.right;
+
+        // y=0 => horizontal movement
+        cameraForward.y = 0f;
+        cameraRight.y = 0f;
+
+        // ensure consistent speed
+        cameraForward.Normalize();
+        cameraRight.Normalize();
+
+        Vector3 movement = Vector3.zero;
+
+        // movement relative to the camera
+        if (forwardKeyPressed)
         {
-            rigidbody.AddForce(new Vector3(0, 0, _speed));
-            forwardKeyPressed = false;
-        }
-        if(leftKeyPressed)
-        {
-            rigidbody.AddForce(new Vector3(-_speed, 0, 0));
-            leftKeyPressed = false;
-        }
-        if(rightKeyPressed)
-        {
-            rigidbody.AddForce(new Vector3(_speed, 0, 0));
-            rightKeyPressed = false;
+            movement += cameraForward; 
         }
         if (backwardKeyPressed)
         {
-            rigidbody.AddForce(new Vector3(0, 0, -_speed));
-            backwardKeyPressed = false;
+            movement -= cameraForward; 
         }
+        if (leftKeyPressed)
+        {
+            movement -= cameraRight; 
+        }
+        if (rightKeyPressed)
+        {
+            movement += cameraRight; 
+        }
+
+        rigidbody.AddForce(movement * _speed, ForceMode.Force);
     }
 }

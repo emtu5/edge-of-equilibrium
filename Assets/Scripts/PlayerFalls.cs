@@ -5,6 +5,7 @@ using UnityEngine.SceneManagement;
 
 public class PlayerFalls : MonoBehaviour
 {
+    public CheckpointSystem checkpointSystem;
     private void OnTriggerEnter(Collider other)
     {
         // if the player enters the trigger
@@ -12,8 +13,8 @@ public class PlayerFalls : MonoBehaviour
         {
             Debug.Log("Player fell off the platform!");
 
-            // restart the current scene
-            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            // respawn the player using the checkpoint system script
+            checkpointSystem.RespawnPlayer();
         }
     }
 }
