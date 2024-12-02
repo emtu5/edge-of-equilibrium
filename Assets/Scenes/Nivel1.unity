@@ -11894,7 +11894,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cd4fa1781c145334caf5d93617d12abb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ballMaterial: {fileID: 0}
+  ballMaterial: {fileID: 11400000, guid: 29114e084b4db564997f092a2414015d, type: 2}
 --- !u!1001 &1877420232
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -49,8 +49,6 @@ public class CheckpointSystem : MonoBehaviour
 
     void Start()
     {
-
-       
 		// Load respawn position from PlayerPrefs
 		float x = PlayerPrefs.GetFloat("RespawnX");
 		float y = PlayerPrefs.GetFloat("RespawnY");
@@ -71,7 +69,13 @@ public class CheckpointSystem : MonoBehaviour
             PlayerPrefs.SetFloat("RespawnZ", respawnPosition.z);
             PlayerPrefs.Save();
 
+            float x = PlayerPrefs.GetFloat("RespawnX");
+            float y = PlayerPrefs.GetFloat("RespawnY");
+            float z = PlayerPrefs.GetFloat("RespawnZ");
+
             Debug.Log("Checkpoint reached!");
+            Debug.Log($"Player respawn point set to: {respawnPosition}");
+            Debug.Log($"PlayerPrefs: {x}, {y}, {z}");
         }
     }
 
