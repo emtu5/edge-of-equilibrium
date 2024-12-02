@@ -1,5 +1,3 @@
-using IdyllicFantasyNature;
-using UnityEditorInternal;
 using UnityEngine;
 
 public class MaterialController : MonoBehaviour
