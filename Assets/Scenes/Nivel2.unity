@@ -2788,12 +2788,6 @@ PrefabInstance:
       propertyPath: cameraTransform
       value: 
       objectReference: {fileID: 559908227}
-    - target: {fileID: 6747091942898064549, guid: 00685f4c29414994a930fc040432cd95,
-        type: 3}
-      propertyPath: ballMaterial
-      value: 
-      objectReference: {fileID: 11400000, guid: 29114e084b4db564997f092a2414015d,
-        type: 2}
     - target: {fileID: 8442963280403627786, guid: 00685f4c29414994a930fc040432cd95,
         type: 3}
       propertyPath: m_Name
