@@ -15,4 +15,5 @@ MonoBehaviour:
   material: {fileID: 2100000, guid: b0a00d378697b584391c424d0ecf58ac, type: 2}
   physicMaterial: {fileID: 13400000, guid: 7b03318ed85ac224e863fdc7191288fb, type: 2}
   mass: 4
-  speed: 20
+  speed: 21
+  drag: 0.07

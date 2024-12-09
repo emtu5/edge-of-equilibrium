@@ -10,7 +10,8 @@ public class Geyser : MonoBehaviour
     {
         // Check if the object entering the geyser area has a Rigidbody
         Rigidbody rb = other.GetComponent<Rigidbody>();
-        if (rb != null)
+		BallMaterial ballMaterial = other.GetComponent<MaterialController>().ballMaterial;
+        if (ballMaterial.name == "Paper" && rb != null)
         {
             // Apply an upward force to the ball
             Vector3 upwardForce = Vector3.up * liftForce;

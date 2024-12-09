@@ -35,6 +35,7 @@ public class MaterialController : MonoBehaviour
 
             // Set the mass
             rb.mass = ballMaterial.mass;
+			rb.drag = ballMaterial.drag;
             playerMovement.setSpeed(ballMaterial.speed);
         }
     }
