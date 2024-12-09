@@ -9,4 +9,5 @@ public class BallMaterial : ScriptableObject
     public PhysicMaterial physicMaterial;
     public float mass;
     public float speed;
+	public float drag;
 }

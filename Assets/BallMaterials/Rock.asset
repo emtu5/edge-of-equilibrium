@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9ab8dd442cb1cc34da1fbafe98ce9ddf, type: 3}
   m_Name: Rock
   m_EditorClassIdentifier: 
-  material: {fileID: 2100000, guid: b0a00d378697b584391c424d0ecf58ac, type: 2}
+  material: {fileID: 2100000, guid: 3dadea4535174ef4bb946360fd2314f4, type: 2}
   physicMaterial: {fileID: 13400000, guid: 7b03318ed85ac224e863fdc7191288fb, type: 2}
   mass: 4
-  speed: 20
+  speed: 23
+  drag: 0.07
