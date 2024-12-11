@@ -10,10 +10,16 @@ public class MainMenuController : MonoBehaviour
         SceneManager.LoadScene("Nivel1");
     }
 
-
     // Open the settings
     //public void OpenSettings()
     //{
     //    SceneManager.LoadScene("SettingsScene");
     //}
+
+    // Quit the game
+    public void QuitGame()
+    {
+        Debug.Log("Quit Game");
+        Application.Quit();
+    }
 }
