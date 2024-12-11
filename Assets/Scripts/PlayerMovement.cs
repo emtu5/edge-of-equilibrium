@@ -16,6 +16,9 @@ public class PlayerMovement : MonoBehaviour
     private bool rightKeyPressed;
 
     public Transform cameraTransform; 
+	
+	public bool useGravity = true;
+
 
     void Start()
     {
@@ -30,6 +33,24 @@ public class PlayerMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
+		//gravity for paper
+		/*BallMaterial ballMaterial = GetComponent<MaterialController>().ballMaterial;
+
+		if (ballMaterial.name == "Paper")
+		{
+			rigidbody.useGravity = false;
+
+			Debug.Log(rigidbody.mass*rigidbody.mass);
+			if (useGravity) {
+				rigidbody.AddForce(Physics.gravity*0.000048f);
+			}
+		}else
+		{
+			rigidbody.useGravity = true;
+
+		}*/
+		
+		
         // check for key presses
         forwardKeyPressed = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow);
         backwardKeyPressed = Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow);
