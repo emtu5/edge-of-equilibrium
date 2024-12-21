@@ -5444,7 +5444,7 @@ PrefabInstance:
     - target: {fileID: 1377893333535549754, guid: 00685f4c29414994a930fc040432cd95,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 13.303673
+      value: 12.68
       objectReference: {fileID: 0}
     - target: {fileID: 1377893333535549754, guid: 00685f4c29414994a930fc040432cd95,
         type: 3}
@@ -5925,7 +5925,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f31c2451b3169742a353e55d32a86b2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  nextSceneName: 
+  nextSceneName: Nivel3
 --- !u!65 &737839549
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -5946,7 +5946,7 @@ BoxCollider:
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 1.6488342, y: 2.34023, z: 0.383564}
-  m_Center: {x: -8.933477, y: 11.625597, z: 1.1175117}
+  m_Center: {x: -13.17, y: 1.96, z: 1.06}
 --- !u!4 &737839550
 Transform:
   m_ObjectHideFlags: 0
