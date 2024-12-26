@@ -27,6 +27,9 @@ public class PlayerPassingFlag : MonoBehaviour
         {
             Debug.Log("Player has reached the flag!");
 
+            //remove all player prefs (respawn info)
+            PlayerPrefs.DeleteAll();
+
             //unlock the next level
             if (levelDataManager != null)
             {
