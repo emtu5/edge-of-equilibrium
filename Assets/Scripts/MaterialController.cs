@@ -23,6 +23,23 @@ public class MaterialController : MonoBehaviour
     {
         if (ballMaterial != null)
         {
+            Debug.Log($"Applying BallMaterial: {ballMaterial.name}");
+
+            if (renderer == null)
+            {
+                Debug.LogError("Renderer is null. Ensure this GameObject has a Renderer component.");
+            }
+
+            if (rb == null)
+            {
+                Debug.LogError("Rigidbody is null. Ensure this GameObject has a Rigidbody component.");
+            }
+
+            if (playerMovement == null)
+            {
+                Debug.LogError("PlayerMovement is null. Ensure the PlayerMovement component is attached.");
+            }
+
             // Set the material
             renderer.material = ballMaterial.material;
 
