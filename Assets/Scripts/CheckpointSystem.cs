@@ -146,22 +146,30 @@ public class CheckpointSystem : MonoBehaviour
 
     public void RespawnPlayer()
     {
+        LifeSystem lifeSystem = FindObjectOfType<LifeSystem>();
+        if (lifeSystem != null)
+        {
+            lifeSystem.LoseLife(); // reduce lives and update UI
+        }
+
+        // reload the current scene to reset player position and state
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
-/*    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        float x = PlayerPrefs.GetFloat("RespawnX"); 
-        float y = PlayerPrefs.GetFloat("RespawnY"); 
-        float z = PlayerPrefs.GetFloat("RespawnZ");  
 
-		//if PlayerPrefs are not set, no checkpoint has been reached, no changes made to the scene reload
-		//if they are player position is changed after scene has been reloaded
-		if (PlayerPrefs.HasKey("RespawnX") && PlayerPrefs.HasKey("RespawnY") && PlayerPrefs.HasKey("RespawnZ"))
-		{
-			respawnPosition = new Vector3(x, y, z);
-			player.position = respawnPosition;
-			Debug.Log($"Player respawned at: {respawnPosition}");
-		}
-    }*/
+    /*    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            float x = PlayerPrefs.GetFloat("RespawnX"); 
+            float y = PlayerPrefs.GetFloat("RespawnY"); 
+            float z = PlayerPrefs.GetFloat("RespawnZ");  
+
+            //if PlayerPrefs are not set, no checkpoint has been reached, no changes made to the scene reload
+            //if they are player position is changed after scene has been reloaded
+            if (PlayerPrefs.HasKey("RespawnX") && PlayerPrefs.HasKey("RespawnY") && PlayerPrefs.HasKey("RespawnZ"))
+            {
+                respawnPosition = new Vector3(x, y, z);
+                player.position = respawnPosition;
+                Debug.Log($"Player respawned at: {respawnPosition}");
+            }
+        }*/
 }

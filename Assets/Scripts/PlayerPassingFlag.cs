@@ -36,7 +36,14 @@ public class PlayerPassingFlag : MonoBehaviour
                 levelDataManager.UnlockNextLevel(currentLevel);
             }
 
-            //load the next level scene
+            // reset lives for the next level
+            LifeSystem lifeSystem = FindObjectOfType<LifeSystem>();
+            if (lifeSystem != null)
+            {
+                lifeSystem.lives = 3; // reset lives to 3
+                lifeSystem.UpdateHeartUI(); // ensure hearts are updated
+            }
+
             SceneManager.LoadScene(nextSceneName);
         }
     }
