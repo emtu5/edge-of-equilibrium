@@ -1,87 +1,67 @@
+using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
+
 
 public class LifeSystem : MonoBehaviour
 {
-    public int maxLives = 3; // maximum number of lives
-    public int lives; // current number of lives
-    public GameObject[] hearts; // array of heart UI icons
-    private CheckpointSystem checkpointSystem;
-    private bool isRespawning = false; // flag to prevent multiple triggers
+    public GameObject heartPrefab; // prefab for heart UI
+    public Transform heartsParent; // parent object for hearts in the UI
+    public int maxLives = 5;
+    public int startLives = 3;
 
-    private static LifeSystem instance; // singleton instance
+    public static int lives; // static variable to persist lives
+    //track hearts that have been collected so that they don't respawn at every fall
+    public static HashSet<string> collectedHearts = new HashSet<string>(); 
 
-    void Awake()
+    private void Start()
     {
-        // singleton pattern to persist LifeSystem across scenes
-        if (instance == null)
+        // if lives hasn't been set, initialize it to startLives
+        if (lives == 0)
         {
-            instance = this;
-            DontDestroyOnLoad(gameObject); // make this object persistent
+            lives = startLives;
         }
-        else if (instance != this)
-        {
-            Destroy(gameObject); // destroy duplicate instances
-        }
-    }
 
-    void Start()
-    {
-        // initialize lives and UI
-        lives = maxLives;
         UpdateHeartUI();
-
-        // find the checkpoint system in the scene
-        checkpointSystem = FindObjectOfType<CheckpointSystem>();
     }
 
     public void LoseLife()
     {
-        // prevent multiple triggers during respawn
-        if (isRespawning) return;
-
-        isRespawning = true; // set flag to prevent re-triggering
-        lives--; // decrement lives
-        UpdateHeartUI(); // update UI to reflect lives left
-
         if (lives > 0)
         {
-            // respawn player at last checkpoint
-            if (checkpointSystem != null)
-            {
-                checkpointSystem.RespawnPlayer();
-            }
-        }
-        else
-        {
-            // restart level if no lives left
-            RestartLevel();
+            lives--;
+            UpdateHeartUI();
         }
 
-        // reset the respawning flag after a short delay
-        Invoke(nameof(ResetRespawningFlag), 0.5f);
+        if (lives <= 0)
+        {
+            collectedHearts.Clear(); 
+            lives = startLives;
+            UpdateHeartUI(); 
+           
+        }
+    }
+
+    public void AddLife()
+    {
+        if (lives < maxLives)
+        {
+            lives++;
+            UpdateHeartUI(); 
+        }
     }
 
     public void UpdateHeartUI()
     {
-        // show hearts for remaining lives and hide the rest
-        for (int i = 0; i < hearts.Length; i++)
+        // clear existing hearts
+        foreach (Transform child in heartsParent)
         {
-            hearts[i].SetActive(i < lives);
+            Destroy(child.gameObject);
         }
-    }
 
-    private void RestartLevel()
-    {
-        // reset lives and checkpoint data
-        lives = maxLives; // reset lives to maximum
-        UpdateHeartUI(); // immediately update the heart UI to show full hearts
-        PlayerPrefs.DeleteAll(); // clear saved checkpoints
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name); // reload the level
-    }
-
-    private void ResetRespawningFlag()
-    {
-        isRespawning = false; // allow LoseLife to be triggered again
+        // add hearts based on the current number of lives
+        for (int i = 0; i < lives; i++)
+        {
+            Instantiate(heartPrefab, heartsParent);
+        }
     }
 }

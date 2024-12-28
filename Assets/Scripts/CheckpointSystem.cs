@@ -10,9 +10,11 @@ public class CheckpointSystem : MonoBehaviour
     private Rigidbody rigidbody;
     private BallMaterial playerBallMaterial;
     public Transform player;
-	
-	//to delete PlayerPrefs if using the unity editor and not the build version
-	#if UNITY_EDITOR
+    public GameObject heart3D; 
+    private Vector3 originalHeartPosition; 
+
+    //to delete PlayerPrefs if using the unity editor and not the build version
+#if UNITY_EDITOR
     [InitializeOnLoad]
     public class ClearPlayerPrefsOnExitPlayMode
     {
@@ -110,11 +112,17 @@ public class CheckpointSystem : MonoBehaviour
 
         //if PlayerPrefs are not set, no checkpoint has been reached, no changes made to the scene reload
         //if they are player position is changed after scene has been reloaded
+
         if (PlayerPrefs.HasKey("RespawnX") && PlayerPrefs.HasKey("RespawnY") && PlayerPrefs.HasKey("RespawnZ"))
         {
             respawnPosition = new Vector3(x, y, z);
             player.position = respawnPosition;
             Debug.Log($"Player respawned at: {respawnPosition}");
+        }
+
+        if (heart3D != null)
+        {
+            originalHeartPosition = heart3D.transform.position;
         }
     }
 
@@ -147,14 +155,53 @@ public class CheckpointSystem : MonoBehaviour
     public void RespawnPlayer()
     {
         LifeSystem lifeSystem = FindObjectOfType<LifeSystem>();
+
         if (lifeSystem != null)
         {
-            lifeSystem.LoseLife(); // reduce lives and update UI
+            if (LifeSystem.lives <= 1) //if last life is being lost
+            {
+                PlayerPrefs.DeleteAll(); // clear checkpoint data
+                ResetHeart();
+                LifeSystem.lives = lifeSystem.startLives; 
+                SceneManager.LoadScene(SceneManager.GetActiveScene().name); 
+                return; //avoid checkpoint logic
+            }
+            else
+            {
+                lifeSystem.LoseLife(); 
+            }
         }
 
-        // reload the current scene to reset player position and state
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        // else respawn at the last checkpoint
+        if (respawnPosition != Vector3.zero)
+        {
+            player.position = respawnPosition; 
+            rigidbody.velocity = Vector3.zero; 
+        }
+        else
+        {
+            // if no checkpoint is set, reload the scene
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        }
     }
+
+
+
+     private void ResetHeart()
+    {
+        if (heart3D != null)
+        {
+            heart3D.SetActive(true); 
+            heart3D.transform.position = originalHeartPosition; 
+        }
+
+        // Remove the heart from the collected list
+        if (LifeSystem.collectedHearts.Contains(heart3D.name))
+        {
+            LifeSystem.collectedHearts.Remove(heart3D.name);
+        }
+    }
+
 
 
     /*    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
