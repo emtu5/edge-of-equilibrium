@@ -20,7 +20,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Tree_Bark_02
+  m_Name: Fir_Bark 1
   m_Shader: {fileID: -6465566751694194690, guid: ef2aa9333fbc23b40ae6289389ebd8fb,
     type: 3}
   m_Parent: {fileID: 0}
@@ -33,7 +33,7 @@ Material:
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 2000
+  m_CustomRenderQueue: -1
   stringTagMap:
     RenderType: Opaque
   disabledShaderPasses: []
@@ -179,7 +179,7 @@ Material:
     - _AlphaToMask: 0
     - _BLEND_NORMALS: 1
     - _BaseMapScale: 0
-    - _Base_Map_Scale: 2
+    - _Base_Map_Scale: 1
     - _Base_Normal_Map_Scale: 1
     - _Blend: 0
     - _BlendModePreserveSpecular: 0
@@ -188,14 +188,14 @@ Material:
     - _CastShadows: 1
     - _ClearCoatMask: 0
     - _ClearCoatSmoothness: 0
-    - _Contrast: 0.78
+    - _Contrast: 0.55
     - _CoverageNormalScale: 0
     - _Coverage_Base_Normal_Map_Scale: 6
     - _Coverage_Direction: 0.89
     - _Coverage_Map_Scale: 0
-    - _Coverage_Mask_Scale: 1
+    - _Coverage_Mask_Scale: 6
     - _Coverage_Metallic: 0
-    - _Coverage_Normal_Strength: 0.64
+    - _Coverage_Normal_Strength: 1
     - _Coverage_Smoothness: 0
     - _Coverage_Thickness: 0
     - _Cull: 2
@@ -206,17 +206,17 @@ Material:
     - _ENABLED: 0
     - _ENABLE_COVERAGE: 0
     - _EnvironmentReflections: 1
-    - _Fade: 0.04
+    - _Fade: 0.11
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
     - _Level: -0.06
     - _MetalicCoverage: 0
-    - _Metallic: 0.31
+    - _Metallic: 0
     - _MossDirection: -0.11
     - _MossMetallicSmoothness: 0
     - _MossNormalStrength: 0.31
-    - _Normal_Strength: 0.36
+    - _Normal_Strength: 1
     - _OVERLAY: 1
     - _OcclusionStrength: 1
     - _Parallax: 0.005
@@ -236,7 +236,7 @@ Material:
     - _ZWriteControl: 0
     m_Colors:
     - _BaseColor: {r: 0.8396226, g: 0.71310794, b: 0.53466535, a: 1}
-    - _Color: {r: 1, g: 0.97056603, b: 0.9386792, a: 1}
+    - _Color: {r: 0.18867922, g: 0.08507449, b: 0.053993072, a: 1}
     - _Coverage_Color: {r: 0.8018868, g: 0.8018868, b: 0.8018868, a: 0}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _MossOffset: {r: 0, g: 0, b: 0, a: 0}
