@@ -14,6 +14,8 @@ public class MainMenuController : MonoBehaviour
     {
         if (levelDataManager != null)
         {
+            LifeSystem.lives = 3;
+            LifeSystem.collectedHearts.Clear();
             resetLevelProgress(); 
             SceneManager.LoadScene("Nivel1");
         }
@@ -21,6 +23,8 @@ public class MainMenuController : MonoBehaviour
 
     public void LoadGame()
     {
+        LifeSystem.lives = 3;
+        LifeSystem.collectedHearts.Clear();
         SceneManager.LoadScene("LevelSelection"); 
     }
 
