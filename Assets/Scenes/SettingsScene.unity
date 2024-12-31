@@ -437,6 +437,7 @@ GameObject:
   m_Component:
   - component: {fileID: 385336612}
   - component: {fileID: 385336613}
+  - component: {fileID: 385336614}
   m_Layer: 5
   m_Name: VolumeSlider
   m_TagString: Untagged
@@ -529,6 +530,19 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &385336614
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 385336611}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e4a89156d5771e4c839cdf5d30cb344, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  volumeSlider: {fileID: 385336613}
 --- !u!1 &489741861
 GameObject:
   m_ObjectHideFlags: 0
@@ -1737,6 +1751,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2005212027}
   - component: {fileID: 2005212028}
+  - component: {fileID: 2005212029}
   m_Layer: 5
   m_Name: MuteToggle
   m_TagString: Untagged
@@ -1812,6 +1827,19 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_IsOn: 1
+--- !u!114 &2005212029
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2005212026}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2b7fff53961308248bc2cffb5ac7e02c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  muteToggle: {fileID: 2005212028}
 --- !u!1 &2043890265
 GameObject:
   m_ObjectHideFlags: 0
@@ -1841,8 +1869,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: be51ca7bcae726f4a8e99900a10c85c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  muteToggle: {fileID: 2005212028}
-  volumeSlider: {fileID: 385336613}
 --- !u!4 &2043890267
 Transform:
   m_ObjectHideFlags: 0
