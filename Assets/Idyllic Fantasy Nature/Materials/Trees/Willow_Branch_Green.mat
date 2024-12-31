@@ -37,9 +37,9 @@ Material:
     m_Ints: []
     m_Floats:
     - _Blend_Height: 0.222
-    - _Wave_Scale: 1
-    - _Wind_Speed: 2.4
-    - _Wind_Strength: 0.2
+    - _Wave_Scale: 0
+    - _Wind_Speed: 0.47
+    - _Wind_Strength: 0.14
     - _Wind_Variation: 0
     m_Colors:
     - _Bottom_Color: {r: 0.5433962, g: 0.5943396, b: 0, a: 0}
