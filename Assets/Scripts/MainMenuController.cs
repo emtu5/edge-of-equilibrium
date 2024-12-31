@@ -24,8 +24,24 @@ public class MainMenuController : MonoBehaviour
         SceneManager.LoadScene("LevelSelection"); 
     }
 
+    public void OpenSettings()
+    {
+        SceneManager.LoadScene("SettingsScene");
+    }
+
+    public void GoToInfoScene()
+    {
+        SceneManager.LoadScene("InfoScene");
+    }
+
+    public void GoBackToMainMenu()
+    {
+        SceneManager.LoadScene("MainMenu");
+    }
+
     public void QuitGame()
     {
+        Debug.Log("Quit Game");
         Application.Quit(); 
     }
 
