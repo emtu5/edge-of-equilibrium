@@ -8,7 +8,7 @@ public class HeartCollectible : MonoBehaviour
         // we check if this heart has already been collected
         if (LifeSystem.collectedHearts.Contains(heartID))
         {
-            gameObject.SetActive(false); // we hide it 
+            //gameObject.SetActive(false); // we hide it 
         }
     }
 
