@@ -7,6 +7,7 @@ public class MainMenuController : MonoBehaviour
 
     void Start()
     {
+		PlayerPrefs.DeleteAll();
         initializeLevelDataManager(); // find or assign the level data manager when the menu loads
     }
 
