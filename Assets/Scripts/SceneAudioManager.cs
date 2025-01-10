@@ -27,7 +27,7 @@ public class SceneMusicManager : MonoBehaviour
             case "Nivel1":
             case "Nivel2":
                 AudioManager.Instance.PlayMusic(AudioManager.Instance.dreamyTheme);
-                AudioManager.Instance.musicSource.time = 0f;
+                //AudioManager.Instance.musicSource.time = 0f;
                 break;
 
             case "Nivel3":
