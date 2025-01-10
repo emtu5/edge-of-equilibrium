@@ -117,6 +117,8 @@ public class CheckpointSystem : MonoBehaviour
 
     public void SaveBallMaterial()
     {
+        playerBallMaterial = rigidbody.GetComponent<MaterialController>()?.ballMaterial;
+
         if (playerBallMaterial != null)
         {
             string path = "BallMaterials/" + playerBallMaterial.name;
