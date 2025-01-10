@@ -14,8 +14,9 @@ public class CheckpointSystem : MonoBehaviour
     public GameObject heart3D;
     private Vector3 originalHeartPosition;
 
-    //to delete PlayerPrefs if using the unity editor and not the build version
-#if UNITY_EDITOR
+    private bool isInitialized = false;
+	
+	#if UNITY_EDITOR
     [InitializeOnLoad]
     public class ClearPlayerPrefsOnExitPlayMode
     {
@@ -35,20 +36,91 @@ public class CheckpointSystem : MonoBehaviour
     }
 #endif
 
-    private void OnSceneUnloaded(Scene scene)
+    void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        isInitialized = false;
+    }
+	
+	private void OnSceneUnloaded(Scene scene)
     {
         PlayerPrefs.DeleteAll();
+    }
+
+    void LateUpdate()
+    {
+        if (!isInitialized)
+        {
+            InitializePlayerAndComponents();
+            isInitialized = true;
+        }
+    }
+
+    private void InitializePlayerAndComponents()
+    {
+        if (player == null)
+        {
+            player = GameObject.FindWithTag("Player")?.transform;
+        }
+
+        if (player == null)
+        {
+            Debug.LogError("Player Transform not found.");
+            return;
+        }
+
+        rigidbody = player.GetComponent<Rigidbody>();
+        if (rigidbody == null)
+        {
+            Debug.LogError("Player Rigidbody component not found.");
+            return;
+        }
+
+        playerBallMaterial = rigidbody.GetComponent<MaterialController>()?.ballMaterial;
+
+        if (heart3D != null)
+        {
+            originalHeartPosition = heart3D.transform.position;
+        }
+
+        // Handle checkpoint data
+        SetPlayerPositionAndMaterial();
+    }
+
+    private void SetPlayerPositionAndMaterial()
+    {
+        if (PlayerPrefs.HasKey("RespawnX") && PlayerPrefs.HasKey("RespawnY") && PlayerPrefs.HasKey("RespawnZ"))
+        {
+            float x = PlayerPrefs.GetFloat("RespawnX");
+            float y = PlayerPrefs.GetFloat("RespawnY");
+            float z = PlayerPrefs.GetFloat("RespawnZ");
+            respawnPosition = new Vector3(x, y, z);
+            player.position = respawnPosition;
+            Debug.Log($"Player respawned at: {respawnPosition}");
+        }
+        else
+        {
+            Debug.Log("No checkpoint data found in PlayerPrefs.");
+        }
+
+        LoadBallMaterial();
     }
 
     public void SaveBallMaterial()
     {
         if (playerBallMaterial != null)
         {
-            // saves the path of the BallMaterial
             string path = "BallMaterials/" + playerBallMaterial.name;
             PlayerPrefs.SetString("BallMaterialPath", path);
-            //PlayerPrefs.Save();
-
             Debug.Log("Ball material path saved: " + path);
         }
         else
@@ -66,8 +138,6 @@ public class CheckpointSystem : MonoBehaviour
 
             if (loadedMaterial != null)
             {
-                // playerBallMaterial = loadedMaterial;
-                // sets the BallMaterial to the one in the prefs/the one that was just loaded
                 rigidbody.GetComponent<MaterialController>().SetBallMaterial(loadedMaterial);
                 Debug.Log("Ball material loaded: " + loadedMaterial.name);
             }
@@ -82,81 +152,20 @@ public class CheckpointSystem : MonoBehaviour
         }
     }
 
-    /*    void Awake()
-        {
-            SceneManager.sceneLoaded += OnSceneLoaded;
-        }
-
-        void OnDestroy()
-        {
-            SceneManager.sceneLoaded -= OnSceneLoaded;
-        }*/
-
-    IEnumerator SetPlayerPositionAndMaterialDelayed()
-    {
-        yield return new WaitForSeconds(0.2f);
-        float x = PlayerPrefs.GetFloat("RespawnX");
-        float y = PlayerPrefs.GetFloat("RespawnY");
-        float z = PlayerPrefs.GetFloat("RespawnZ");
-
-        LoadBallMaterial();
-
-        //if PlayerPrefs are not set, no checkpoint has been reached, no changes made to the scene reload
-        //if they are player position is changed after scene has been reloaded
-
-        if (PlayerPrefs.HasKey("RespawnX") && PlayerPrefs.HasKey("RespawnY") && PlayerPrefs.HasKey("RespawnZ"))
-        {
-            respawnPosition = new Vector3(x, y, z);
-            player.position = respawnPosition;
-            Debug.Log($"Player respawned at: {respawnPosition}");
-            Debug.Log($"Player position after update: {player.position}");
-        }
-    }
-
-    void Start()
-    {
-        /*		// Load respawn position from PlayerPrefs
-                float x = PlayerPrefs.GetFloat("RespawnX");
-                float y = PlayerPrefs.GetFloat("RespawnY");
-                float z = PlayerPrefs.GetFloat("RespawnZ");
-                respawnPosition = new Vector3(x, y, z);*/
-
-        // getting current rigidbody (for position)
-        // and ballmaterial of player
-        rigidbody = player.GetComponent<Rigidbody>();
-        playerBallMaterial = rigidbody.GetComponent<MaterialController>().ballMaterial;
-
-        StartCoroutine(SetPlayerPositionAndMaterialDelayed());
-
-        if (heart3D != null)
-        {
-            originalHeartPosition = heart3D.transform.position;
-        }
-    }
-
     void OnTriggerEnter(Collider other)
     {
-        // reading the ball material of the player again
-        playerBallMaterial = rigidbody.GetComponent<MaterialController>().ballMaterial;
-
         if (other.CompareTag("Checkpoint"))
         {
             respawnPosition = other.transform.position;
 
-            // Save the new respawn position to PlayerPrefs
             PlayerPrefs.SetFloat("RespawnX", respawnPosition.x);
             PlayerPrefs.SetFloat("RespawnY", respawnPosition.y);
             PlayerPrefs.SetFloat("RespawnZ", respawnPosition.z);
             SaveBallMaterial();
             PlayerPrefs.Save();
 
-            float x = PlayerPrefs.GetFloat("RespawnX");
-            float y = PlayerPrefs.GetFloat("RespawnY");
-            float z = PlayerPrefs.GetFloat("RespawnZ");
-
             Debug.Log("Checkpoint reached!");
             Debug.Log($"Player respawn point set to: {respawnPosition}");
-            Debug.Log($"PlayerPrefs: {x}, {y}, {z}");
         }
     }
 
@@ -166,13 +175,13 @@ public class CheckpointSystem : MonoBehaviour
 
         if (lifeSystem != null)
         {
-            if (LifeSystem.lives <= 1) //if last life is being lost
+            if (LifeSystem.lives <= 1)
             {
-                PlayerPrefs.DeleteAll(); // clear checkpoint data
+                PlayerPrefs.DeleteAll();
                 ResetHeart();
                 LifeSystem.lives = lifeSystem.startLives;
                 SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-                return; //avoid checkpoint logic
+                return;
             }
             else
             {
@@ -181,21 +190,7 @@ public class CheckpointSystem : MonoBehaviour
         }
 
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-
-/*        // else respawn at the last checkpoint
-        if (respawnPosition != Vector3.zero)
-        {
-            player.position = respawnPosition;
-            rigidbody.velocity = Vector3.zero;
-        }
-        else
-        {
-            // if no checkpoint is set, reload the scene
-            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-        }*/
     }
-
-
 
     private void ResetHeart()
     {
@@ -205,28 +200,9 @@ public class CheckpointSystem : MonoBehaviour
             heart3D.transform.position = originalHeartPosition;
         }
 
-        // Remove the heart from the collected list
         if (LifeSystem.collectedHearts.Contains(heart3D.name))
         {
             LifeSystem.collectedHearts.Remove(heart3D.name);
         }
     }
-
-
-
-    /*    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-        {
-            float x = PlayerPrefs.GetFloat("RespawnX"); 
-            float y = PlayerPrefs.GetFloat("RespawnY"); 
-            float z = PlayerPrefs.GetFloat("RespawnZ");  
-
-            //if PlayerPrefs are not set, no checkpoint has been reached, no changes made to the scene reload
-            //if they are player position is changed after scene has been reloaded
-            if (PlayerPrefs.HasKey("RespawnX") && PlayerPrefs.HasKey("RespawnY") && PlayerPrefs.HasKey("RespawnZ"))
-            {
-                respawnPosition = new Vector3(x, y, z);
-                player.position = respawnPosition;
-                Debug.Log($"Player respawned at: {respawnPosition}");
-            }
-        }*/
 }
