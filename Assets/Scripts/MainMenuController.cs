@@ -16,7 +16,7 @@ public class MainMenuController : MonoBehaviour
         {
             LifeSystem.lives = 3;
             LifeSystem.collectedHearts.Clear();
-            resetLevelProgress(); 
+            //resetLevelProgress(); 
             SceneManager.LoadScene("Nivel1");
         }
     }
