@@ -19810,8 +19810,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f31c2451b3169742a353e55d32a86b2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  nextSceneName: 
-  currentLevel: 0
+  nextSceneName: CongratsScreen
+  currentLevel: 3
 --- !u!65 &1305456213
 BoxCollider:
   m_ObjectHideFlags: 0

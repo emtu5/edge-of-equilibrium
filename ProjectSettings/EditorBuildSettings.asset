@@ -15,6 +15,9 @@ EditorBuildSettings:
     path: Assets/Scenes/Nivel3.unity
     guid: 89dfb6aa90c48c84d89fd2950b4b7c63
   - enabled: 1
+    path: Assets/Scenes/CongratsScreen.unity
+    guid: 62b62cefc8ece8c4a8a1273ea651e0af
+  - enabled: 1
     path: Assets/Scenes/SampleScene.unity
     guid: 99c9720ab356a0642a771bea13969a05
   - enabled: 1
