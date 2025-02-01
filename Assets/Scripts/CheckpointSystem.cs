@@ -194,6 +194,7 @@ public class CheckpointSystem : MonoBehaviour
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
+    // when the player restarts the level
     private void ResetHeart()
     {
         if (heart3D != null)

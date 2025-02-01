@@ -18,7 +18,7 @@ public class LevelDataManager : MonoBehaviour
 
             // set the save file path for the level data
             saveFilePath = Path.Combine(Application.persistentDataPath, "levelData.json");
-
+            Debug.Log(saveFilePath);
             // load the level data when the game starts
             LoadLevelData();
         }
