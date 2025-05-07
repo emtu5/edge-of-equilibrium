@@ -28,6 +28,7 @@ public class SmoothedParticleHydrodynamics : MonoBehaviour
     public Vector3 boxSize = new Vector3(4, 10, 3);
     public Vector3 spawnCenter;
     public float particleRadius = 0.1f;
+    public float displacement = 0.2f;
 
     //[Header("Particle Rendering")]
     public Mesh particleMesh;
@@ -38,8 +39,45 @@ public class SmoothedParticleHydrodynamics : MonoBehaviour
     public ComputeShader computeShader;
     public Particle[] particles;
 
+    //[Header("Fluid Constants")]
+    public float boundDamping = -0.3f;
+    public float viscosity = -0.003f;
+    public float restingDensity = 1f;
+    public float gasConstant = 2f;
+    public float particleMass = 1f;
+    public float timestep = 0.01f;
+    public float gravity = -9.81f;
+
     private ComputeBuffer argsBuffer;
     private ComputeBuffer particlesBuffer;
+    private int integrateKernel;
+    private int computeForcesKernel;
+    private int computeDensityPressureKernel;
+    private void SetupComputeBuffers()
+    {
+        integrateKernel = computeShader.FindKernel("Integrate");
+        computeForcesKernel = computeShader.FindKernel("ComputeForces");
+        computeDensityPressureKernel = computeShader.FindKernel("ComputeDensityPressure");
+
+        computeShader.SetInt("particleLength", totalParticles);
+        computeShader.SetFloat("boundDamping", boundDamping);
+        computeShader.SetFloat("viscosity", viscosity);
+        computeShader.SetFloat("restingDensity", restingDensity);
+        computeShader.SetFloat("gasConstant", gasConstant);
+        computeShader.SetFloat("particleMass", particleMass);
+        computeShader.SetFloat("pi", Mathf.PI);
+        computeShader.SetVector("boxSize", boxSize);
+        computeShader.SetFloat("gravity", gravity);
+        computeShader.SetFloat("radius1", particleRadius);
+        computeShader.SetFloat("radius2", particleRadius * particleRadius);
+        computeShader.SetFloat("radius3", particleRadius * particleRadius * particleRadius);
+        computeShader.SetFloat("radius4", particleRadius * particleRadius * particleRadius * particleRadius);
+        computeShader.SetFloat("radius5", particleRadius * particleRadius * particleRadius * particleRadius * particleRadius);
+
+        computeShader.SetBuffer(integrateKernel, "_particles", particlesBuffer);
+        computeShader.SetBuffer(computeForcesKernel, "_particles", particlesBuffer);
+        computeShader.SetBuffer(computeDensityPressureKernel, "_particles", particlesBuffer);
+    }
 
     private void Awake()
     {
@@ -59,8 +97,18 @@ public class SmoothedParticleHydrodynamics : MonoBehaviour
 
         particlesBuffer = new ComputeBuffer(totalParticles, structSize);
         particlesBuffer.SetData(particles);
-    }
 
+        SetupComputeBuffers();
+    }
+    private void FixedUpdate()
+    {
+        computeShader.SetVector("boxSize", boxSize);
+        computeShader.SetFloat("timestep", timestep);
+
+        computeShader.Dispatch(integrateKernel, totalParticles / 100, 1, 1);
+        computeShader.Dispatch(computeForcesKernel, totalParticles / 100, 1, 1);
+        computeShader.Dispatch(computeDensityPressureKernel, totalParticles / 100, 1, 1);
+    }
     private void SpawnParticlesInBox()
     {
         Vector3 spawnpoint = spawnCenter;
@@ -73,7 +121,9 @@ public class SmoothedParticleHydrodynamics : MonoBehaviour
                 for (int z = 0; z < numToSpawn.z; z++)
                 {
                     Vector3 spawnPos = spawnpoint + new Vector3(x * particleRadius * 2, y * particleRadius * 2, z * particleRadius * 2);
+                    spawnPos += Random.onUnitSphere * particleRadius * displacement;
                     Particle particle = new Particle
+                    
                     {
                         position = spawnPos
                     };
@@ -97,8 +147,8 @@ public class SmoothedParticleHydrodynamics : MonoBehaviour
         }
     }
 
-    private static readonly int SizeProperty = Shader.PropertyToID("size");
-    private static readonly int ParticlesBufferProperty = Shader.PropertyToID("particlesBuffer");
+    private static readonly int SizeProperty = Shader.PropertyToID("_Size");
+    private static readonly int ParticlesBufferProperty = Shader.PropertyToID("_particlesBuffer");
 
     private void Update()
     {
