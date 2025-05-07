@@ -1,0 +1,144 @@
+#pragma kernel Integrate
+#pragma kernel ComputeForces
+#pragma kernel ComputeDensityPressure
+
+struct Particle
+{
+    // total: 44 bytes
+    float pressure; // 4 bytes
+    float density; // 4 bytes
+    float3 currentForce; // 12 bytes
+    float3 velocity; // 12 bytes
+    float3 position; // 12 bytes
+};
+
+RWStructuredBuffer<Particle> _particles;
+
+float particleMass, gasConstant, restingDensity, viscosity, radius1, radius2, radius3, radius4, radius5, boundDamping, gravity, pi;
+int particleLength;
+float timestep;
+float3 boxSize;
+
+[numthreads(100, 1, 1)]
+void Integrate(uint3 id : SV_DispatchThreadID)
+{
+    //_particles[id.x].currentForce = float3(0, gravity * particleMass, 0);
+    
+    float3 velocity = _particles[id.x].velocity + ((_particles[id.x].currentForce / particleMass) * timestep);
+    _particles[id.x].position += velocity * timestep;
+    
+    float3 topRight = boxSize / 2;
+    float3 bottomLeft = boxSize / -2;
+    
+    // keeping particles inside bounds
+    if (_particles[id.x].position.x - radius1 < bottomLeft.x)
+    {
+        velocity.x *= boundDamping;
+        _particles[id.x].position.x = bottomLeft.x + radius1;
+    }
+    if (_particles[id.x].position.y - radius1 < bottomLeft.y)
+    {
+        velocity.y *= boundDamping;
+        _particles[id.x].position.y = bottomLeft.y + radius1;
+    }
+    if (_particles[id.x].position.z - radius1 < bottomLeft.z)
+    {
+        velocity.z *= boundDamping;
+        _particles[id.x].position.z = bottomLeft.z + radius1;
+    }
+    
+    if (_particles[id.x].position.x + radius1 > topRight.x)
+    {
+        velocity.x *= boundDamping;
+        _particles[id.x].position.x = topRight.x - radius1;
+    }
+    if (_particles[id.x].position.y + radius1 > topRight.y)
+    {
+        velocity.y *= boundDamping;
+        _particles[id.x].position.y = topRight.y - radius1;
+    }
+    if (_particles[id.x].position.z + radius1 > topRight.z)
+    {
+        velocity.z *= boundDamping;
+        _particles[id.x].position.z = topRight.z - radius1;
+    }
+    
+    _particles[id.x].velocity = velocity;
+}
+
+float SpikyKernelFirstDerivative(float distance)
+{
+    float x = 1.0f - distance / radius1;
+    return -45.f / (pi * radius4) * x * x;
+}
+
+float SpikyKernelSecondDerivative(float distance)
+{
+    float x = 1.0f - distance / radius1;
+    return 90.f / (pi * radius5) * x;
+}
+
+float3 SpikyKernelGradient(float distance, float3 direction)
+{
+    return SpikyKernelFirstDerivative(distance) * direction;
+}
+
+[numthreads(100, 1, 1)]
+void ComputeForces(uint3 id : SV_DispatchThreadID)
+{
+    float3 origin = _particles[id.x].position;
+    float density2 = _particles[id.x].density * _particles[id.x].density;
+    float mass2 = particleMass * particleMass;
+    float3 pressure = float3(0, 0, 0);
+    float3 viscosityForce = float3(0, 0, 0);
+    
+    for (int i = 0; i < particleLength; i++)
+    {
+        if (origin.x == _particles[i].position.x && origin.y == _particles[i].position.y && origin.z == _particles[i].position.z)
+            continue;
+        
+        float dist = distance(_particles[i].position, origin);
+        if (dist < radius1 * 2)
+        {
+            float3 pressureGradientDirection = normalize(_particles[id.x].position - _particles[i].position);
+            float3 _pressureContribution = mass2 * SpikyKernelGradient(dist, pressureGradientDirection);
+            _pressureContribution *= (_particles[id.x].pressure / density2
+                + _particles[i].pressure / (_particles[i].density * _particles[i].density));
+            float3 _viscostyContribution = viscosity * mass2 * (_particles[i].velocity - _particles[id.x].velocity)
+                / _particles[i].density;
+            _viscostyContribution *= SpikyKernelSecondDerivative(dist);
+            pressure += _pressureContribution;
+            viscosityForce += _viscostyContribution;
+        }
+    }
+    
+    _particles[id.x].currentForce = float3(0, gravity * particleMass, 0) - pressure + viscosityForce;
+	//_particles[id.x].currentForce = float3(0,0,0);
+}
+
+float StdKernel(float distanceSquared)
+{
+    float x = 1.0f - distanceSquared / radius2;
+    return 315.0f / (64.0f * pi * radius3) * x * x * x;
+}
+
+[numthreads(100, 1, 1)]
+void ComputeDensityPressure(uint3 id : SV_DispatchThreadID)
+{
+    float3 origin = _particles[id.x].position;
+    float sum = 0;
+    
+    for (int i = 0; i < particleLength; i++)
+    {
+        float3 diff = origin - _particles[i].position;
+        float distanceSquared = dot(diff, diff);
+        
+        if (radius2 * 0.004 > distanceSquared * 0.004)
+        {
+            sum += StdKernel(distanceSquared * 0.004);
+        }
+    }
+    
+    _particles[id.x].density = sum * particleMass + 0.000001f;
+    _particles[id.x].pressure = gasConstant * (_particles[id.x].density - restingDensity);
+}
