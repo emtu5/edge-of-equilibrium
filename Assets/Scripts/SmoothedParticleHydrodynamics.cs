@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 using System.Runtime.InteropServices;
 
 [System.Serializable]
@@ -99,15 +100,24 @@ public class SmoothedParticleHydrodynamics : MonoBehaviour
         particlesBuffer.SetData(particles);
 
         SetupComputeBuffers();
+		
+		Debug.Log($"Integrate kernel = {integrateKernel}, ComputeForces = {computeForcesKernel}, DensityPressure = {computeDensityPressureKernel}");
+
     }
     private void FixedUpdate()
     {
         computeShader.SetVector("boxSize", boxSize);
         computeShader.SetFloat("timestep", timestep);
 
-        computeShader.Dispatch(integrateKernel, totalParticles / 100, 1, 1);
-        computeShader.Dispatch(computeForcesKernel, totalParticles / 100, 1, 1);
         computeShader.Dispatch(computeDensityPressureKernel, totalParticles / 100, 1, 1);
+		computeShader.Dispatch(computeForcesKernel, totalParticles / 100, 1, 1);
+		computeShader.Dispatch(integrateKernel, totalParticles / 100, 1, 1);
+		
+		AsyncGPUReadback.Request(particlesBuffer, (req) => {
+		  var data = req.GetData<Particle>();
+		  Debug.Log($"P[0]: pos={data[0].position}, dens={data[0].density}, pres={data[0].pressure},currForce={data[0].currentForce},currVel={data[0].currentVelocity},");
+		});
+        
     }
     private void SpawnParticlesInBox()
     {
@@ -125,7 +135,9 @@ public class SmoothedParticleHydrodynamics : MonoBehaviour
                     Particle particle = new Particle
                     
                     {
-                        position = spawnPos
+                        position = spawnPos,
+						//density = restingDensity,
+						//pressure = 0f
                     };
                     _particles.Add(particle);
                 }
@@ -168,3 +180,5 @@ public class SmoothedParticleHydrodynamics : MonoBehaviour
         }
     }
 }
+
+
