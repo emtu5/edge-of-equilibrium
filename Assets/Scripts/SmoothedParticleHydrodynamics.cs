@@ -20,6 +20,8 @@ public class SmoothedParticleHydrodynamics : MonoBehaviour
 {
     public const int structSize = 44;
     //[Header("General")]
+	public Rigidbody collisionSphere;
+	
     public bool showSpheres = true;
     public Vector3Int numToSpawn = new Vector3Int(10, 10, 10);
     private int totalParticles
@@ -68,6 +70,7 @@ public class SmoothedParticleHydrodynamics : MonoBehaviour
         computeShader.SetFloat("particleMass", particleMass);
         computeShader.SetFloat("pi", Mathf.PI);
         computeShader.SetVector("boxSize", boxSize);
+		computeShader.SetVector("boxCenter", this.gameObject.transform.position);
         computeShader.SetFloat("gravity", gravity);
         computeShader.SetFloat("radius1", particleRadius);
         computeShader.SetFloat("radius2", particleRadius * particleRadius);
@@ -99,6 +102,7 @@ public class SmoothedParticleHydrodynamics : MonoBehaviour
         particlesBuffer = new ComputeBuffer(totalParticles, structSize);
         particlesBuffer.SetData(particles);
 
+
         SetupComputeBuffers();
 		
 		Debug.Log($"Integrate kernel = {integrateKernel}, ComputeForces = {computeForcesKernel}, DensityPressure = {computeDensityPressureKernel}");
@@ -108,15 +112,19 @@ public class SmoothedParticleHydrodynamics : MonoBehaviour
     {
         computeShader.SetVector("boxSize", boxSize);
         computeShader.SetFloat("timestep", timestep);
+		computeShader.SetVector("spherePos", collisionSphere.transform.position - this.gameObject.transform.position);
+		computeShader.SetFloat("sphereRadius", collisionSphere.transform.localScale.x / 2);
+		
 
         computeShader.Dispatch(computeDensityPressureKernel, totalParticles / 100, 1, 1);
 		computeShader.Dispatch(computeForcesKernel, totalParticles / 100, 1, 1);
 		computeShader.Dispatch(integrateKernel, totalParticles / 100, 1, 1);
+
 		
-		AsyncGPUReadback.Request(particlesBuffer, (req) => {
+		/*AsyncGPUReadback.Request(particlesBuffer, (req) => {
 		  var data = req.GetData<Particle>();
 		  Debug.Log($"P[0]: pos={data[0].position}, dens={data[0].density}, pres={data[0].pressure},currForce={data[0].currentForce},currVel={data[0].currentVelocity},");
-		});
+		});*/
         
     }
     private void SpawnParticlesInBox()
@@ -150,12 +158,13 @@ public class SmoothedParticleHydrodynamics : MonoBehaviour
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.red;
-        Gizmos.DrawWireCube(Vector3.zero, boxSize);
+        //Gizmos.DrawWireCube(Vector3.zero, boxSize);
+		Gizmos.DrawWireCube(this.gameObject.transform.position, boxSize);
 
         if (!Application.isPlaying)
         {
             Gizmos.color = Color.green;
-            Gizmos.DrawWireSphere(spawnCenter, 0.1f);
+            Gizmos.DrawWireSphere(spawnCenter + this.gameObject.transform.position, 0.1f);
         }
     }
 
@@ -173,7 +182,7 @@ public class SmoothedParticleHydrodynamics : MonoBehaviour
                 particleMesh,
                 0,
                 particleMaterial,
-                new Bounds(Vector3.zero, boxSize),
+                new Bounds(this.gameObject.transform.position, boxSize),
                 argsBuffer,
                 castShadows: UnityEngine.Rendering.ShadowCastingMode.Off
             );

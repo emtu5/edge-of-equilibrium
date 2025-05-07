@@ -14,10 +14,17 @@ struct Particle
 
 RWStructuredBuffer<Particle> _particles;
 
+
 float particleMass, gasConstant, restingDensity, viscosity, radius1, radius2, radius3, radius4, radius5, boundDamping, gravity, pi;
 int particleLength;
 float timestep;
 float3 boxSize;
+
+float3 boxCenter;
+float3 spherePos;
+float sphereRadius;
+float3 sphereForces;
+
 
 [numthreads(100, 1, 1)]
 void Integrate(uint3 id : SV_DispatchThreadID)
@@ -114,6 +121,12 @@ void ComputeForces(uint3 id : SV_DispatchThreadID)
     
     _particles[id.x].currentForce = float3(0, gravity * particleMass, 0) - pressure + viscosityForce;
 	//_particles[id.x].currentForce = float3(0,0,0);
+	
+	float3 collisionDirection = _particles[id.x].position - spherePos;
+	if (length(collisionDirection) < sphereRadius)
+	{
+		_particles[id.x].currentForce += collisionDirection * 400;
+	}
 }
 
 float StdKernel(float distanceSquared)
