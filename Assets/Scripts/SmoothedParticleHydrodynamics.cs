@@ -136,7 +136,9 @@ public class SmoothedParticleHydrodynamics : MonoBehaviour
         // Debug.Log(collisionSphere.GetComponent<MaterialController>().ballMaterial);
         var matCtrl = collisionSphere.GetComponent<MaterialController>();
         bool isPaper = matCtrl.ballMaterial.name == "Paper";
+        bool isRock = matCtrl.ballMaterial.name == "Rock";
         bool hasForce = !sphereForce[0].Equals(Vector3.zero);
+        Rigidbody rb = collisionSphere.GetComponent<Rigidbody>();
 
         if (isPaper && hasForce && !isFading)
         {
@@ -145,8 +147,19 @@ public class SmoothedParticleHydrodynamics : MonoBehaviour
         }
         else if (!isFading)
         {
-            collisionSphere.GetComponent<Rigidbody>().AddForce(sphereForce[0], ForceMode.Force);
+            rb.AddForce(sphereForce[0], ForceMode.Force);
         }
+
+        if (isRock && hasForce && !isFading)
+        {
+            rb.AddForce(new Vector3(0, -100, 0), ForceMode.Force);
+        }
+
+        if (isFading)
+        {
+            rb.AddForce(new Vector3(0, 0.001f, 0), ForceMode.Force);
+        }
+        
 
         /*AsyncGPUReadback.Request(particlesBuffer, (req) => {
 		  var data = req.GetData<Particle>();

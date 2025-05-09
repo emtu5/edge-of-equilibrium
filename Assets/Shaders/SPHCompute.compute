@@ -142,7 +142,7 @@ void ComputeForces(uint3 id : SV_DispatchThreadID)
 	{
         float3 contrib = collisionDirection * 21;
         InterlockedAddFloat(_sphereForce, 0, -contrib.x);
-        InterlockedAddFloat(_sphereForce, 4, -contrib.y);
+        InterlockedAddFloat(_sphereForce, 4, -contrib.y + 2);
         InterlockedAddFloat(_sphereForce, 8, -contrib.z);
         // _particles[id.x].currentForce += contrib;   
 		_particles[id.x].currentForce += collisionDirection * 400;
