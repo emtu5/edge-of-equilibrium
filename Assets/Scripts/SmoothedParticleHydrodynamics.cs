@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 using System.Runtime.InteropServices;
+using UnityEditor;
 
 [System.Serializable]
 [StructLayout(LayoutKind.Sequential, Size = SmoothedParticleHydrodynamics.structSize)]
@@ -18,9 +19,13 @@ public struct Particle
 
 public class SmoothedParticleHydrodynamics : MonoBehaviour
 {
+    public float fadeDuration = 3f;
+    private bool isFading = false;
+
     public const int structSize = 44;
     //[Header("General")]
-	public Rigidbody collisionSphere;
+	// public Rigidbody collisionSphere;
+	public GameObject collisionSphere;
 	
     public bool showSpheres = true;
     public Vector3Int numToSpawn = new Vector3Int(10, 10, 10);
@@ -127,7 +132,21 @@ public class SmoothedParticleHydrodynamics : MonoBehaviour
 
         Vector3[] sphereForce = new Vector3[1];
         sphereForceBuffer.GetData(sphereForce);
-        collisionSphere.AddForce(sphereForce[0], ForceMode.Force);
+
+        // Debug.Log(collisionSphere.GetComponent<MaterialController>().ballMaterial);
+        var matCtrl = collisionSphere.GetComponent<MaterialController>();
+        bool isPaper = matCtrl.ballMaterial.name == "Paper";
+        bool hasForce = !sphereForce[0].Equals(Vector3.zero);
+
+        if (isPaper && hasForce && !isFading)
+        {
+            // start fading once
+            StartCoroutine(FadeAwayAndDestroy());
+        }
+        else if (!isFading)
+        {
+            collisionSphere.GetComponent<Rigidbody>().AddForce(sphereForce[0], ForceMode.Force);
+        }
 
         /*AsyncGPUReadback.Request(particlesBuffer, (req) => {
 		  var data = req.GetData<Particle>();
@@ -195,6 +214,38 @@ public class SmoothedParticleHydrodynamics : MonoBehaviour
                 castShadows: UnityEngine.Rendering.ShadowCastingMode.Off
             );
         }
+    }
+
+    private IEnumerator FadeAwayAndDestroy()
+    {
+        isFading = true;
+
+        // assume the MaterialController holds a reference to the actual Material
+        Material mat = collisionSphere.GetComponent<Renderer>().material;
+        Color c = mat.color;
+        float elapsed = 0f;
+
+        // take away control from player
+        // collisionSphere.GetComponent<Rigidbody>().isKinematic = true;
+        collisionSphere.GetComponent<PlayerMovement>().setIsControllable(false);
+
+        // gradually reduce alpha
+        while (elapsed < fadeDuration)
+        {
+            elapsed += Time.deltaTime;
+            float a = Mathf.Lerp(c.a, 0f, elapsed / fadeDuration);
+            mat.color = new Color(c.r, c.g, c.b, a);
+            yield return null;
+        }
+
+        // ensure fully transparent
+        mat.color = new Color(c.r, c.g, c.b, 0f);
+
+        // optionally disable collision and physics
+        collisionSphere.GetComponent<Collider>().enabled = false;
+        
+
+        collisionSphere.GetComponent<CheckpointSystem>().RespawnPlayer();
     }
 
     private void OnDestroy()
