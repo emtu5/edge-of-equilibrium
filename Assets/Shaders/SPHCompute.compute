@@ -13,7 +13,7 @@ struct Particle
 };
 
 RWStructuredBuffer<Particle> _particles;
-
+RWByteAddressBuffer _sphereForce;
 
 float particleMass, gasConstant, restingDensity, viscosity, radius1, radius2, radius3, radius4, radius5, boundDamping, gravity, pi;
 int particleLength;
@@ -90,6 +90,21 @@ float3 SpikyKernelGradient(float distance, float3 direction)
     return SpikyKernelFirstDerivative(distance) * direction;
 }
 
+void InterlockedAddFloat(RWByteAddressBuffer buf, uint offset, float value)
+{
+    uint i_val = asuint(value);
+    uint tmp0 = 0;
+    uint tmp1;
+    while (true)
+    {
+        buf.InterlockedCompareExchange(offset, tmp0, i_val, tmp1);
+        if (tmp1 == tmp0)  
+            break;
+        tmp0 = tmp1;
+        i_val = asuint(value + asfloat(tmp1));
+    }
+}
+
 [numthreads(100, 1, 1)]
 void ComputeForces(uint3 id : SV_DispatchThreadID)
 {
@@ -125,6 +140,11 @@ void ComputeForces(uint3 id : SV_DispatchThreadID)
 	float3 collisionDirection = _particles[id.x].position - spherePos;
 	if (length(collisionDirection) < sphereRadius)
 	{
+        float3 contrib = collisionDirection * 21;
+        InterlockedAddFloat(_sphereForce, 0, -contrib.x);
+        InterlockedAddFloat(_sphereForce, 4, -contrib.y);
+        InterlockedAddFloat(_sphereForce, 8, -contrib.z);
+        // _particles[id.x].currentForce += contrib;   
 		_particles[id.x].currentForce += collisionDirection * 400;
 	}
 }

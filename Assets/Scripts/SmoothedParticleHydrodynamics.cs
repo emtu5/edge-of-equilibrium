@@ -53,9 +53,12 @@ public class SmoothedParticleHydrodynamics : MonoBehaviour
 
     private ComputeBuffer argsBuffer;
     private ComputeBuffer particlesBuffer;
+    private ComputeBuffer sphereForceBuffer;
+
     private int integrateKernel;
     private int computeForcesKernel;
     private int computeDensityPressureKernel;
+
     private void SetupComputeBuffers()
     {
         integrateKernel = computeShader.FindKernel("Integrate");
@@ -81,6 +84,7 @@ public class SmoothedParticleHydrodynamics : MonoBehaviour
         computeShader.SetBuffer(integrateKernel, "_particles", particlesBuffer);
         computeShader.SetBuffer(computeForcesKernel, "_particles", particlesBuffer);
         computeShader.SetBuffer(computeDensityPressureKernel, "_particles", particlesBuffer);
+        computeShader.SetBuffer(computeForcesKernel, "_sphereForce", sphereForceBuffer);
     }
 
     private void Awake()
@@ -102,6 +106,7 @@ public class SmoothedParticleHydrodynamics : MonoBehaviour
         particlesBuffer = new ComputeBuffer(totalParticles, structSize);
         particlesBuffer.SetData(particles);
 
+        sphereForceBuffer = new ComputeBuffer(1, sizeof(float) * 3, ComputeBufferType.Raw);
 
         SetupComputeBuffers();
 		
@@ -114,18 +119,21 @@ public class SmoothedParticleHydrodynamics : MonoBehaviour
         computeShader.SetFloat("timestep", timestep);
 		computeShader.SetVector("spherePos", collisionSphere.transform.position - this.gameObject.transform.position);
 		computeShader.SetFloat("sphereRadius", collisionSphere.transform.localScale.x / 2);
-		
+        sphereForceBuffer.SetData(new Vector3[] { Vector3.zero });
 
         computeShader.Dispatch(computeDensityPressureKernel, totalParticles / 100, 1, 1);
 		computeShader.Dispatch(computeForcesKernel, totalParticles / 100, 1, 1);
 		computeShader.Dispatch(integrateKernel, totalParticles / 100, 1, 1);
 
-		
-		/*AsyncGPUReadback.Request(particlesBuffer, (req) => {
+        Vector3[] sphereForce = new Vector3[1];
+        sphereForceBuffer.GetData(sphereForce);
+        collisionSphere.AddForce(sphereForce[0], ForceMode.Force);
+
+        /*AsyncGPUReadback.Request(particlesBuffer, (req) => {
 		  var data = req.GetData<Particle>();
 		  Debug.Log($"P[0]: pos={data[0].position}, dens={data[0].density}, pres={data[0].pressure},currForce={data[0].currentForce},currVel={data[0].currentVelocity},");
 		});*/
-        
+
     }
     private void SpawnParticlesInBox()
     {
@@ -187,6 +195,13 @@ public class SmoothedParticleHydrodynamics : MonoBehaviour
                 castShadows: UnityEngine.Rendering.ShadowCastingMode.Off
             );
         }
+    }
+
+    private void OnDestroy()
+    {
+        argsBuffer?.Release();
+        particlesBuffer?.Release();
+        sphereForceBuffer?.Release();
     }
 }
 

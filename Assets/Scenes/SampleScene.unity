@@ -4682,24 +4682,39 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1008755149872918690, guid: edc73199422652843ae37162b0c210f6,
         type: 3}
+      propertyPath: timestep
+      value: 0.007
+      objectReference: {fileID: 0}
+    - target: {fileID: 1008755149872918690, guid: edc73199422652843ae37162b0c210f6,
+        type: 3}
+      propertyPath: viscosity
+      value: -0.05
+      objectReference: {fileID: 0}
+    - target: {fileID: 1008755149872918690, guid: edc73199422652843ae37162b0c210f6,
+        type: 3}
       propertyPath: numToSpawn.x
-      value: 3
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 1008755149872918690, guid: edc73199422652843ae37162b0c210f6,
         type: 3}
       propertyPath: numToSpawn.y
-      value: 3
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 1008755149872918690, guid: edc73199422652843ae37162b0c210f6,
         type: 3}
       propertyPath: numToSpawn.z
-      value: 3
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 1008755149872918690, guid: edc73199422652843ae37162b0c210f6,
+        type: 3}
+      propertyPath: spawnCenter.y
+      value: -2.29
       objectReference: {fileID: 0}
     - target: {fileID: 1008755149872918690, guid: edc73199422652843ae37162b0c210f6,
         type: 3}
       propertyPath: collisionSphere
       value: 
-      objectReference: {fileID: 1724405949}
+      objectReference: {fileID: 1873597903}
     - target: {fileID: 3326018804038064889, guid: edc73199422652843ae37162b0c210f6,
         type: 3}
       propertyPath: m_Name
@@ -4713,7 +4728,7 @@ PrefabInstance:
     - target: {fileID: 5587898027329807035, guid: edc73199422652843ae37162b0c210f6,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 2.06
+      value: -0.41
       objectReference: {fileID: 0}
     - target: {fileID: 5587898027329807035, guid: edc73199422652843ae37162b0c210f6,
         type: 3}
@@ -8356,6 +8371,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4aa90662303c75246972d35dc0a340bf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!54 &1873597903 stripped
+Rigidbody:
+  m_CorrespondingSourceObject: {fileID: 1103536251233946795, guid: 00685f4c29414994a930fc040432cd95,
+    type: 3}
+  m_PrefabInstance: {fileID: 9205384000390665659}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1938306726
 GameObject:
   m_ObjectHideFlags: 0
