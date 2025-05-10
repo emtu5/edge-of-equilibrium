@@ -41,7 +41,8 @@ public class SmoothedParticleHydrodynamics : MonoBehaviour
     //[Header("Particle Rendering")]
     public Mesh particleMesh;
     public float particleRenderSize = 8f;
-    public Material particleMaterial;
+    public Material particleMaterialAsset;
+    private Material particleMaterial; 
 
     //[Header("Compute")]
     public ComputeShader computeShaderAsset;
@@ -95,9 +96,10 @@ public class SmoothedParticleHydrodynamics : MonoBehaviour
 
     private void Awake()
     {
-        // each sph simulator needs its own private copy of the compute shader
+        // each sph simulator needs its own private copy of the compute shader and material
         // otherwise they're all going to use the same buffers (so all of them will be mirrored)
         computeShader = Instantiate(computeShaderAsset);
+        particleMaterial = Instantiate(particleMaterialAsset);
 
         SpawnParticlesInBox();
 
