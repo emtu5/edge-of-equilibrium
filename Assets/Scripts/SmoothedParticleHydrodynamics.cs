@@ -62,15 +62,25 @@ public class SmoothedParticleHydrodynamics : MonoBehaviour
     private ComputeBuffer particlesBuffer;
     private ComputeBuffer sphereForceBuffer;
 
+    private ComputeBuffer particleIndices;
+    private ComputeBuffer particleCellIndices;
+    private ComputeBuffer cellOffsets;
+
     private int integrateKernel;
     private int computeForcesKernel;
     private int computeDensityPressureKernel;
+    private int hashParticleKernel;
+    private int bitonicSortKernel;
+    private int calculateOffsetsKernel;
 
     private void SetupComputeBuffers()
     {
         integrateKernel = computeShader.FindKernel("Integrate");
         computeForcesKernel = computeShader.FindKernel("ComputeForces");
         computeDensityPressureKernel = computeShader.FindKernel("ComputeDensityPressure");
+        hashParticleKernel = computeShader.FindKernel("HashParticles");
+        bitonicSortKernel = computeShader.FindKernel("BitonicSort");
+        calculateOffsetsKernel = computeShader.FindKernel("CalculateOffsets");
 
         computeShader.SetInt("particleLength", totalParticles);
         computeShader.SetFloat("boundDamping", boundDamping);
@@ -92,6 +102,26 @@ public class SmoothedParticleHydrodynamics : MonoBehaviour
         computeShader.SetBuffer(computeForcesKernel, "_particles", particlesBuffer);
         computeShader.SetBuffer(computeDensityPressureKernel, "_particles", particlesBuffer);
         computeShader.SetBuffer(computeForcesKernel, "_sphereForce", sphereForceBuffer);
+
+        computeShader.SetBuffer(computeDensityPressureKernel, "_particleIndices", particleIndices);
+        computeShader.SetBuffer(computeDensityPressureKernel, "_particleCellIndices", particleCellIndices);
+        computeShader.SetBuffer(computeDensityPressureKernel, "_cellOffsets", cellOffsets);
+
+        computeShader.SetBuffer(computeForcesKernel, "_particleIndices", particleIndices);
+        computeShader.SetBuffer(computeForcesKernel, "_particleCellIndices", particleCellIndices);
+        computeShader.SetBuffer(computeForcesKernel, "_cellOffsets", cellOffsets);
+
+        computeShader.SetBuffer(hashParticleKernel, "_particleIndices", particleIndices);
+        computeShader.SetBuffer(hashParticleKernel, "_particles", particlesBuffer);
+        computeShader.SetBuffer(hashParticleKernel, "_particleCellIndices", particleCellIndices);
+        computeShader.SetBuffer(hashParticleKernel, "_cellOffsets", cellOffsets);
+
+        computeShader.SetBuffer(bitonicSortKernel, "_particleIndices", particleIndices);
+        computeShader.SetBuffer(bitonicSortKernel, "_particleCellIndices", particleCellIndices);
+
+        computeShader.SetBuffer(calculateOffsetsKernel, "_particleIndices", particleIndices);
+        computeShader.SetBuffer(calculateOffsetsKernel, "_particleCellIndices", particleCellIndices);
+        computeShader.SetBuffer(calculateOffsetsKernel, "_cellOffsets", cellOffsets);
     }
 
     private void Awake()
@@ -120,11 +150,35 @@ public class SmoothedParticleHydrodynamics : MonoBehaviour
 
         sphereForceBuffer = new ComputeBuffer(1, sizeof(float) * 3, ComputeBufferType.Raw);
 
-        SetupComputeBuffers();
-		
-		Debug.Log($"Integrate kernel = {integrateKernel}, ComputeForces = {computeForcesKernel}, DensityPressure = {computeDensityPressureKernel}");
+        particleIndices = new ComputeBuffer(totalParticles, 4);
+        particleCellIndices = new ComputeBuffer(totalParticles, 4);
+        cellOffsets = new ComputeBuffer(totalParticles, 4);
 
+        uint[] particleInd = new uint[totalParticles];
+
+        for (int i = 0; i < particleInd.Length; i++)
+        {
+            particleInd[i] = (uint)i;
+        }
+
+        particleIndices.SetData(particleInd);
+
+        SetupComputeBuffers();
     }
+
+    private void SortParticles()
+    {
+        for (int dimension = 2; dimension <= totalParticles; dimension <<= 1)
+        {
+            computeShader.SetInt("dimension", dimension);
+            for (int block = dimension >> 1; block > 0; block >>= 1)
+            {
+                computeShader.SetInt("block", block);
+                computeShader.Dispatch(bitonicSortKernel, totalParticles / 256, 1, 1);
+            }
+        }
+    }
+
     private void FixedUpdate()
     {
         computeShader.SetVector("boxSize", boxSize);
@@ -133,9 +187,13 @@ public class SmoothedParticleHydrodynamics : MonoBehaviour
 		computeShader.SetFloat("sphereRadius", collisionSphere.transform.localScale.x / 2);
         sphereForceBuffer.SetData(new Vector3[] { Vector3.zero });
 
-        computeShader.Dispatch(computeDensityPressureKernel, totalParticles / 100, 1, 1);
-		computeShader.Dispatch(computeForcesKernel, totalParticles / 100, 1, 1);
-		computeShader.Dispatch(integrateKernel, totalParticles / 100, 1, 1);
+        computeShader.Dispatch(hashParticleKernel, totalParticles / 256, 1, 1);
+        SortParticles();
+
+        computeShader.Dispatch(calculateOffsetsKernel, totalParticles / 256, 1, 1);
+        computeShader.Dispatch(computeDensityPressureKernel, totalParticles / 256, 1, 1);
+		computeShader.Dispatch(computeForcesKernel, totalParticles / 256, 1, 1);
+		computeShader.Dispatch(integrateKernel, totalParticles / 256, 1, 1);
 
         Vector3[] sphereForce = new Vector3[1];
         sphereForceBuffer.GetData(sphereForce);

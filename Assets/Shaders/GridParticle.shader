@@ -104,7 +104,7 @@ Shader "Instanced/GridTestParticleShader_URP"
             {
                 half4 texColor = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, IN.uv);
                 half3 finalColor = _Color.rgb * texColor.rgb;
-                return half4(finalColor, .5);
+                return half4(finalColor, .3);
             }
 
             ENDHLSL

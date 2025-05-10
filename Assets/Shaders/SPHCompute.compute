@@ -1,6 +1,9 @@
 #pragma kernel Integrate
 #pragma kernel ComputeForces
 #pragma kernel ComputeDensityPressure
+#pragma kernel HashParticles
+#pragma kernel BitonicSort
+#pragma kernel CalculateOffsets
 
 struct Particle
 {
@@ -14,9 +17,12 @@ struct Particle
 
 RWStructuredBuffer<Particle> _particles;
 RWByteAddressBuffer _sphereForce;
+RWStructuredBuffer<uint> _particleIndices;
+RWStructuredBuffer<uint> _particleCellIndices;
+RWStructuredBuffer<uint> _cellOffsets;
 
 float particleMass, gasConstant, restingDensity, viscosity, radius1, radius2, radius3, radius4, radius5, boundDamping, gravity, pi;
-int particleLength;
+uint particleLength;
 float timestep;
 float3 boxSize;
 
@@ -25,8 +31,10 @@ float3 spherePos;
 float sphereRadius;
 float3 sphereForces;
 
+int block;
+int dimension;
 
-[numthreads(100, 1, 1)]
+[numthreads(256, 1, 1)]
 void Integrate(uint3 id : SV_DispatchThreadID)
 {
     //_particles[id.x].currentForce = float3(0, gravity * particleMass, 0);
@@ -73,6 +81,70 @@ void Integrate(uint3 id : SV_DispatchThreadID)
     _particles[id.x].velocity = velocity;
 }
 
+int3 GetCell(float3 position)
+{
+    float3 halfSize = boxSize / 2;
+    return int3(
+        (int) ((position.x + halfSize.x) / radius1),
+        (int) ((position.y + halfSize.y) / radius1),
+        (int) ((position.z + halfSize.z) / radius1)
+    );
+}
+
+uint HashCell(int3 cellIndex)
+{
+    uint prime1 = 54762209;
+    uint prime2 = 60908101;
+    uint prime3 = 28905691;
+    
+    int n = prime1 * cellIndex.x ^ prime2 * cellIndex.y ^ prime3 * cellIndex.z;
+    n = n % particleLength;
+    
+    return n;
+}
+
+[numthreads(256, 1, 1)]
+void HashParticles(uint3 id : SV_DispatchThreadID)
+{
+    _cellOffsets[id.x] = 100000000;
+    uint particleIndex = _particleIndices[id.x];
+    _particleCellIndices[particleIndex] = HashCell(GetCell(_particles[particleIndex].position));
+}
+
+[numthreads(256, 1, 1)]
+void BitonicSort(uint3 id : SV_DispatchThreadID)
+{
+    uint i = id.x + id.y * 256 * 1024;
+    uint j = i ^ block;
+    
+    if (j < i || i >= particleLength)
+    {
+        return;
+    }
+        
+    uint keyi = _particleIndices[i];
+    uint keyj = _particleIndices[j];
+    float valuei = _particleCellIndices[keyi];
+    float valuej = _particleCellIndices[keyj];
+    
+    float diff = ((i & dimension) == 0 ? 1 : -1);
+    diff = diff * (valuei - valuej);
+    if (diff > 0)
+    {
+        _particleIndices[i] = keyj;
+        _particleIndices[j] = keyi;
+    }
+}
+
+[numthreads(256, 1, 1)]
+void CalculateOffsets(uint3 id : SV_DispatchThreadID)
+{
+    uint particleIndex = _particleIndices[id.x];
+    uint cellIndex = _particleCellIndices[particleIndex];
+    
+    InterlockedMin(_cellOffsets[cellIndex], id.x);
+}
+
 float SpikyKernelFirstDerivative(float distance)
 {
     float x = 1.0f - distance / radius1;
@@ -105,48 +177,79 @@ void InterlockedAddFloat(RWByteAddressBuffer buf, uint offset, float value)
     }
 }
 
-[numthreads(100, 1, 1)]
+[numthreads(256, 1, 1)]
 void ComputeForces(uint3 id : SV_DispatchThreadID)
 {
-    float3 origin = _particles[id.x].position;
-    float density2 = _particles[id.x].density * _particles[id.x].density;
+    uint particleIndex = _particleIndices[id.x];
+    int3 cellIndex = GetCell(_particles[particleIndex].position);
+    
+    float3 origin = _particles[particleIndex].position;
+    float density2 = _particles[particleIndex].density * _particles[particleIndex].density;
     float mass2 = particleMass * particleMass;
     float3 pressure = float3(0, 0, 0);
     float3 viscosityForce = float3(0, 0, 0);
     
-    for (int i = 0; i < particleLength; i++)
+    for (int i = -2; i <= 2; ++i)
     {
-        if (origin.x == _particles[i].position.x && origin.y == _particles[i].position.y && origin.z == _particles[i].position.z)
-            continue;
-        
-        float dist = distance(_particles[i].position, origin);
-        if (dist < radius1 * 2)
+        for (int j = -2; j <= 2; ++j)
         {
-            float3 pressureGradientDirection = normalize(_particles[id.x].position - _particles[i].position);
-            float3 _pressureContribution = mass2 * SpikyKernelGradient(dist, pressureGradientDirection);
-            _pressureContribution *= (_particles[id.x].pressure / density2
-                + _particles[i].pressure / (_particles[i].density * _particles[i].density));
-            float3 _viscostyContribution = viscosity * mass2 * (_particles[i].velocity - _particles[id.x].velocity)
-                / _particles[i].density;
-            _viscostyContribution *= SpikyKernelSecondDerivative(dist);
-            pressure += _pressureContribution;
-            viscosityForce += _viscostyContribution;
+            for (int k = -2; k <= 2; ++k)
+            {
+                int3 neighborCellIndex = cellIndex + int3(i, j, k);
+                uint neighborCellHash = HashCell(neighborCellIndex);
+                uint neighborIterator = _cellOffsets[neighborCellHash];
+                
+                while (neighborIterator != 100000000 && particleLength > neighborIterator)
+                {
+                    uint neighborParticleIndex = _particleIndices[neighborIterator];
+                    if (_particleCellIndices[neighborParticleIndex] != neighborCellHash)
+                    {
+                        break;
+                    }
+                    
+                    Particle neighborParticle = _particles[neighborParticleIndex];
+                    
+                    if (origin.x == neighborParticle.position.x &&
+                        origin.y == neighborParticle.position.y &&
+                        origin.z == neighborParticle.position.z)
+                    {
+                        neighborIterator++;
+                        continue;
+                    }
+                    
+                    float dist = distance(neighborParticle.position, origin);
+                    if (dist < radius1 * 2)
+                    {
+                        float3 pressureGradientDirection = normalize(_particles[particleIndex].position - _particles[neighborParticleIndex].position);
+                        float3 _pressureContribution = mass2 * SpikyKernelGradient(dist, pressureGradientDirection);
+                        _pressureContribution *= (_particles[particleIndex].pressure / density2
+                        + _particles[neighborParticleIndex].pressure / (_particles[neighborParticleIndex].density * _particles[neighborParticleIndex].density));
+                        float3 _viscostyContribution = viscosity * mass2 * (_particles[neighborParticleIndex].velocity - _particles[particleIndex].velocity)
+                        / _particles[neighborParticleIndex].density;
+                        _viscostyContribution *= SpikyKernelSecondDerivative(dist);
+                        pressure += _pressureContribution;
+                        viscosityForce += _viscostyContribution;
+                    }
+                    
+                    neighborIterator++;
+                }
+            }
         }
     }
     
-    _particles[id.x].currentForce = float3(0, gravity * particleMass, 0) - pressure + viscosityForce;
-	//_particles[id.x].currentForce = float3(0,0,0);
+    _particles[particleIndex].currentForce = float3(0, gravity * particleMass, 0) - pressure + viscosityForce;
+	//_particles[particleIndex].currentForce = float3(0,0,0);
 	
-	float3 collisionDirection = _particles[id.x].position - spherePos;
+    float3 collisionDirection = _particles[particleIndex].position - spherePos;
 	if (length(collisionDirection) < sphereRadius)
 	{
         float3 contrib = collisionDirection * 21;
-        InterlockedAddFloat(_sphereForce, 0, -contrib.x);
+        InterlockedAddFloat(_sphereForce, 0, -contrib.x * 0.8);
         InterlockedAddFloat(_sphereForce, 4, -contrib.y + 2);
-        InterlockedAddFloat(_sphereForce, 8, -contrib.z);
-        // _particles[id.x].currentForce += contrib;   
-		_particles[id.x].currentForce += collisionDirection * 400;
-	}
+        InterlockedAddFloat(_sphereForce, 8, -contrib.z * 0.8);
+        // _particles[particleIndex].currentForce += contrib;   
+        _particles[particleIndex].currentForce += collisionDirection * 400;
+    }
 }
 
 float StdKernel(float distanceSquared)
@@ -155,23 +258,50 @@ float StdKernel(float distanceSquared)
     return 315.0f / (64.0f * pi * radius3) * x * x * x;
 }
 
-[numthreads(100, 1, 1)]
+[numthreads(256, 1, 1)]
 void ComputeDensityPressure(uint3 id : SV_DispatchThreadID)
 {
-    float3 origin = _particles[id.x].position;
+    uint particleIndex = _particleIndices[id.x];
+    int3 cellIndex = GetCell(_particles[particleIndex].position);
+    
+    float3 origin = _particles[particleIndex].position;
     float sum = 0;
     
-    for (int i = 0; i < particleLength; i++)
+    for (int i = -2; i <= 2; ++i)
     {
-        float3 diff = origin - _particles[i].position;
-        float distanceSquared = dot(diff, diff);
-        
-        if (radius2 * 0.004 > distanceSquared * 0.004)
+        for (int j = -2; j <= 2; ++j)
         {
-            sum += StdKernel(distanceSquared * 0.004);
+            for (int k = -2; k <= 2; ++k)
+            {
+                int3 neighborCellIndex = cellIndex + int3(i, j, k);
+                uint neighborCellHash = HashCell(neighborCellIndex);
+                uint neighborIterator = _cellOffsets[neighborCellHash];
+                
+                while (neighborIterator != 100000000 && particleLength > neighborIterator)
+                {
+                    uint neighborParticleIndex = _particleIndices[neighborIterator];
+                    if (_particleCellIndices[neighborParticleIndex] != neighborCellHash)
+                    {
+                        break;
+                    }
+                    
+                    Particle neighborParticle = _particles[neighborParticleIndex];
+                    
+                    float3 diff = origin - _particles[neighborParticleIndex].position;
+                    float distanceSquared = dot(diff, diff);
+                    
+                    if (radius2 * 0.004 > distanceSquared * 0.004)
+                    {
+                        sum += StdKernel(distanceSquared * 0.004);
+                    }
+                    
+                    neighborIterator++;
+                }
+
+            }
         }
     }
     
-    _particles[id.x].density = sum * particleMass + 0.000001f;
-    _particles[id.x].pressure = gasConstant * (_particles[id.x].density - restingDensity);
+    _particles[particleIndex].density = sum * particleMass + 0.000001f;
+    _particles[particleIndex].pressure = gasConstant * (_particles[particleIndex].density - restingDensity);
 }
