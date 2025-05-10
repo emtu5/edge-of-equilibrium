@@ -5225,6 +5225,11 @@ PrefabInstance:
       propertyPath: collisionSphere
       value: 
       objectReference: {fileID: 192384465}
+    - target: {fileID: 1008755149872918690, guid: edc73199422652843ae37162b0c210f6,
+        type: 3}
+      propertyPath: particleRenderSize
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 3326018804038064889, guid: edc73199422652843ae37162b0c210f6,
         type: 3}
       propertyPath: m_Name

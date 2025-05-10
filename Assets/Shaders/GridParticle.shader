@@ -14,12 +14,15 @@ Shader "Instanced/GridTestParticleShader_URP"
 
     SubShader
     {
-        Tags { "RenderType"="Opaque" "Queue"="Geometry" }
+        Tags { "RenderType"="Transparent" "Queue"="Transparent" }
 
         Pass
         {
             Name "FORWARD"
             Tags { "LightMode"="UniversalForward" }
+            Blend SrcAlpha OneMinusSrcAlpha
+            // ZWrite Off
+
 
             HLSLPROGRAM
             #pragma vertex Vert
@@ -101,7 +104,7 @@ Shader "Instanced/GridTestParticleShader_URP"
             {
                 half4 texColor = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, IN.uv);
                 half3 finalColor = _Color.rgb * texColor.rgb;
-                return half4(finalColor, 1.0);
+                return half4(finalColor, .5);
             }
 
             ENDHLSL
