@@ -15,6 +15,8 @@ public class PlayerMovement : MonoBehaviour
     private bool leftKeyPressed;
     private bool rightKeyPressed;
 
+    private bool _isControllable = true;
+
     public Transform cameraTransform; 
 	
 	public bool useGravity = true;
@@ -88,11 +90,22 @@ public class PlayerMovement : MonoBehaviour
             movement += cameraRight; 
         }
 
-        rigidbody.AddForce(movement * _speed, ForceMode.Force);
+        if (_isControllable)
+        {
+            rigidbody.AddForce(movement * _speed, ForceMode.Force);
+        } else
+        {
+            Debug.Log("YOO");
+        }
     }
 
     public void setSpeed(float speed)
     {
         _speed = speed;
+    }
+
+    public void setIsControllable(bool isControllable)
+    {
+        _isControllable = isControllable;
     }
 }
