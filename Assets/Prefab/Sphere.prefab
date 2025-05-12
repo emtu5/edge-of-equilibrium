@@ -32,7 +32,7 @@ Transform:
   m_GameObject: {fileID: 8442963280403627786}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.8810282, y: 0, z: -8.978501}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -124,6 +124,7 @@ MonoBehaviour:
   _speed: 20
   maxAngVelocity: 40000
   cameraTransform: {fileID: 0}
+  useGravity: 1
 --- !u!54 &1103536251233946795
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -164,6 +165,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   player: {fileID: 1377893333535549754}
+  heart3D: {fileID: 0}
 --- !u!114 &6747091942898064549
 MonoBehaviour:
   m_ObjectHideFlags: 0
