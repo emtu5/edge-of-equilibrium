@@ -40,4 +40,11 @@ public class PauseManager : MonoBehaviour
         Time.timeScale = 1f;
         SceneManager.LoadScene("MainMenu");
     }
+
+    public void RespawnPlayer()
+    {
+        GameObject player = GameObject.FindGameObjectWithTag("Player"); // Find the player object
+        player.GetComponent<CheckpointSystem>().RespawnPlayer(); // Call the Respawn method on the player
+        ResumeGame();
+    }
 }
