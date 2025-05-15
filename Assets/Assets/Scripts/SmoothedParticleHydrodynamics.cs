@@ -163,6 +163,8 @@ public class SmoothedParticleHydrodynamics : MonoBehaviour
 
         particleIndices.SetData(particleInd);
 
+        Debug.Log("awake!");
+
         SetupComputeBuffers();
     }
 
@@ -331,6 +333,19 @@ public class SmoothedParticleHydrodynamics : MonoBehaviour
         argsBuffer?.Release();
         particlesBuffer?.Release();
         sphereForceBuffer?.Release();
+        particleIndices?.Release();
+        particleCellIndices?.Release();
+        cellOffsets?.Release();
+    }
+
+    private void OnDisable()
+    {
+        argsBuffer?.Release();
+        particlesBuffer?.Release();
+        sphereForceBuffer?.Release();
+        particleIndices?.Release();
+        particleCellIndices?.Release();
+        cellOffsets?.Release();
     }
 }
 
